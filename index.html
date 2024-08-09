@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencatatan Keuangan Harian</title>
+    <style>
+        body {
+            background-color: rgb(219, 150, 150);
+        }
+
+        h1 {
+            color: rgb(187, 3, 58);
+        }
+
+        input {
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        button {
+            border-radius: 5px;
+            border: 0px red;
+            padding: 5px;
+            background-color: red;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Catatan Pengeluaran Harian</h1>
+
+    <!--Menuliskan form untuk memasukan input tanggal, jumlah dan pengeluaran-->
+    <form id="money-form">
+        <input type="date" id="date" placeholder="Tanggal Pengeluaran" required>
+        <input type="number" id="amount" placeholder="Jumlah Pengeluaran: Rp. ">
+        <input type="text" id="category" placeholder="Kategori Pengeluaran">
+        <button type="submit">Tambahkan Pengeluaran</button>
+        <p id="expenseCounter">Total Catatan</p>
+    </form>
+
+    <!--Untuk menampilkan list catatan pengeluaran-->
+    <ul id="expense-list"></ul>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() { // digunakan agar dokumen HTML selesai dimuat dahulu
+            // mengambil elemen HTML form dan list dari DOM
+            const form = document.getElementById("money-form");
+            const expenseList = document.getElementById("expense-list");
+
+            // mengambil data dari localStorage
+            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+
+            // untuk menangani event form saat submit ke list
+            form.addEventListener("submit", function(event) {
+                event.preventDefault(); // mencegah reload halaman
+                
+                // untuk mengambil nilai dari form di HTML
+                const dateExpense = document.getElementById('date').value;
+                const amountExpense = document.getElementById('amount').value;
+                const categoryExpense = document.getElementById('category').value;
+                
+                // membuat objek baru dan memasukan ke halaman
+                const expense = {
+                    id: Date.now(),
+                    date: dateExpense,
+                    amount: amountExpense,
+                    category: categoryExpense
+                };
+
+                // untuk menambahkan array baru
+                expenses.push(expense);
+
+                // untuk menyimpan array yang telah diperbaharui ke localStorage
+                localStorage.setItem('expenses', JSON.stringify(expenses));
+
+                // untuk menambahkan catatan baru ke list halaman
+                addExpenseList(expense);
+                // untuk mengosongkan form input setelah menambahkan catatan baru
+                form.reset();
+                // untuk mengupdate total catatan
+                updateExpenseCounter();
+            });
+
+            // fungsi ini untuk menambahkan item ke dalam list di halaman
+            function addExpenseList(expense) {
+                // untuk menambahkan elemen <li> list baru 
+                const newLi = document.createElement('li');
+                // setelah menambahkan elemen <li>, tambahkan text content untuk mengisi li tsb
+                newLi.textContent = `${expense.date} - Rp${expense.amount} - ${expense.category}`;
+
+                // membuat tombol hapus pada item yang ditambahkan
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Hapus';
+                // menambahkan event listener ke tombol hapus
+                deleteBtn.onclick = function() {
+                    newLi.remove(); // untuk menghapus elemen <li>
+                    expenses = expenses.filter(exp => exp.id !== expense.id); // untuk memfilter array untuk menghapus sesuai IDnya
+                    localStorage.setItem('expenses', JSON.stringify(expenses)); // mengupdate atau menyimpan kembali data JSON yang telah diperbaharui
+                    updateExpenseCounter(); // mengupdate tampilan total catatan
+                }
+                newLi.appendChild(deleteBtn); // menambahkan tombol hapus ke elemen <li>
+                expenseList.appendChild(newLi); // menambahkan elemen <li> ke dalam list <ul> di halaman Web
+            }
+
+            // untuk menghitung dan menampilkan total jumlah catatan
+            function updateExpenseCounter() {
+                const totalExpense = document.getElementById('expense-list').children.length;
+                document.getElementById('expenseCounter').innerText = 'Total Catatan: ' + totalExpense;
+            }
+
+            // untuk memuat dan menamppilkan semua catatan
+            function upExpenses() {
+                expenses.forEach(expense => {
+                    addExpenseList(expense);
+                });
+                updateExpenseCounter();
+            }
+            // memanggil fungsi UpExpenses
+           upExpenses();
+        });
+
+    </script>
+</body>
+</html>
